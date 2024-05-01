@@ -7,7 +7,7 @@ public interface ClientInter  extends Remote{
     int summer(int n, int m) throws RemoteException;
     String getName() throws RemoteException ;
     // Method to process a point and find the nearest centroid
-    void processPoint(double[] point, double[][] centroids) throws RemoteException;
+    // void processPoint(double[] point, double[][] centroids) throws RemoteException;
     
 
     // Method to process a chunk of points and find the nearest centroids for each point

@@ -46,43 +46,58 @@ public class ServerMain {
         
         try {
             
-             Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+             // Get the RMI registry
+            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
 
-            
+            // Create an array to hold the results from each client
+            double[][] totalResults = null;
 
-            // Call the summer method on the client
-            // ************************************** useful **********************
-            // for (int i=0;i<2;i++){
-            //     ClientInter client = (ClientInter) registry.lookup("client"+(i+1));
-            //     int res = client.summer(10, 10);
-            //     System.out.println("Result from Client " + (i + 1) + ": " + res);
-
-            // // Print the result
-            //     System.out.println("res  of server = " + res);
-            // }
-            // ************************************** useful **********************
-            ClientInter client = (ClientInter) registry.lookup("client1");
-            
-            double[][] resultsArray ;
-            
+            // Divide the points into chunks
             double[][] points = {
                 {1.0, 2.0},
                 {3.0, 4.0},
                 {5.0, 6.0}
-        };
-
-        // Generate some random centroids
-        double[][] centroids = {
+            };
+            
+            // Generate some random centroids
+            double[][] centroids = {
                 {2.0, 2.0},
                 {4.0, 4.0}
-        };
+            };
 
-        // Process the chunk of points
-        resultsArray=client.processChunk(points, centroids);
-        System.out.println("**************Results:******************");
-        for (int i = 0; i < resultsArray.length; i++) {
-            System.out.println("Point " + (i + 1) + " is closest to centroid (" + resultsArray[i][0] + ", " + resultsArray[i][1] + ")");
-        }
+            // Get the number of clients
+            int numClients = 3; // Change this according to the number of clients
+
+            // Calculate chunk size
+            int chunkSize = points.length / numClients;
+
+            // Create an array to hold the results from each client
+            totalResults = new double[points.length][2];
+
+            // Send each chunk to a client
+            for (int i = 0; i < numClients; i++) {
+                // Lookup the client
+                ClientInter client = (ClientInter) registry.lookup("client" + (i + 1));
+
+                // Calculate start and end index of the chunk
+                int startIndex = i * chunkSize;
+                int endIndex = Math.min(startIndex + chunkSize, points.length);
+
+                // Extract the chunk of points
+                double[][] chunk = new double[endIndex - startIndex][];
+                System.arraycopy(points, startIndex, chunk, 0, endIndex - startIndex);
+
+                // Process the chunk and store the results
+                double[][] chunkResults = client.processChunk(chunk, centroids);
+                System.arraycopy(chunkResults, 0, totalResults, startIndex, chunkResults.length);
+            }
+
+            // Print the total results
+            System.out.println("************** Total Results: ****************");
+            for (int i = 0; i < totalResults.length; i++) {
+                System.out.println("Point " + (i + 1) + " is closest to centroid (" + totalResults[i][0] + ", " + totalResults[i][1] + ")");
+            }
+
 
 
         } catch (RemoteException e) {
@@ -96,7 +111,22 @@ public class ServerMain {
 
 
 
-    // // @Override
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+ // // @Override
     // public void processChunk(double[][] points, double[][] centroids)  {
     //     // Dummy implementation for testing
     //     // System.out.println("Received chunk of points for processing:");
@@ -109,39 +139,6 @@ public class ServerMain {
     //         client.processChunk(points, centroids);
     //     // }
     // }
-
-    // Test method to simulate sending a chunk of points to a client
-    private void testProcessChunk() {
-        try {
-            // Create a client
-            ClientInter client = new ClientImpl("client1");
-
-            // Generate some random points
-            double[][] points = {
-                    {1.0, 2.0},
-                    {3.0, 4.0},
-                    {5.0, 6.0}
-            };
-
-            // Generate some random centroids
-            double[][] centroids = {
-                    {2.0, 2.0},
-                    {4.0, 4.0}
-            };
-
-            // Process the chunk of points
-            client.processChunk(points, centroids);
-        } catch (RemoteException e) {
-            e.printStackTrace();
-        }
-    }
-}
-
-
-
-
-
-
 
 
 
@@ -157,3 +154,46 @@ public class ServerMain {
             // Look up the ClientInter object from the registry
             
 // ComputeService csi = new ComputeServiceImpl();
+
+
+
+
+// / Call the summer method on the client
+            // ************************************** useful **********************
+            // for (int i=0;i<2;i++){
+            //     ClientInter client = (ClientInter) registry.lookup("client"+(i+1));
+            //     int res = client.summer(10, 10);
+            //     System.out.println("Result from Client " + (i + 1) + ": " + res);
+
+            // // Print the result
+            //     System.out.println("res  of server = " + res);
+            // }
+            // ************************************** useful **********************
+
+
+
+                // // Test method to simulate sending a chunk of points to a client
+    // private void testProcessChunk() {
+    //     try {
+    //         // Create a client
+    //         ClientInter client = new ClientImpl("client1");
+
+    //         // Generate some random points
+    //         double[][] points = {
+    //                 {1.0, 2.0},
+    //                 {3.0, 4.0},
+    //                 {5.0, 6.0}
+    //         };
+
+    //         // Generate some random centroids
+    //         double[][] centroids = {
+    //                 {2.0, 2.0},
+    //                 {4.0, 4.0}
+    //         };
+
+    //         // Process the chunk of points
+    //         client.processChunk(points, centroids);
+    //     } catch (RemoteException e) {
+    //         e.printStackTrace();
+    //     }
+    // }

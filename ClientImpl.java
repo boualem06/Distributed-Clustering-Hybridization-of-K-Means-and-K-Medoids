@@ -16,32 +16,13 @@ public class ClientImpl implements  ClientInter{
         return n + m;
     }
 
-    @Override
-    public void processPoint(double[] point, double[][] centroids) throws RemoteException {
-        // Calculate the nearest centroid for the given point
-        double nearestDistance = Double.MAX_VALUE;
-        double[] nearestCentroid = null;
-
-        // Calculate Euclidean distance to find the nearest centroid
-        for (double[] centroid : centroids) {
-            double distance = calculateDistance(point, centroid);
-            if (distance < nearestDistance) {
-                nearestDistance = distance;
-                nearestCentroid = centroid;
-            }
-        }
-        System.out.println("Point (" + point[0] + ", " + point[1] + ") is closest to centroid (" +
-                nearestCentroid[0] + ", " + nearestCentroid[1] + ")");
-    }
-
+    
     @Override
     public double[][] processChunk(double[][] points, double[][] centroids) throws RemoteException {
         // // Process each point in the chunk
-        // for (double[] point : points) {
-        //     processPoint(point, centroids);
-        // }
+       
+        // System.out.println(points[0][0]);
 
-        // Process the chunk and return results
         List<double[]> results = new ArrayList<>();
         for (double[] point : points) {
             double[] nearestCentroid = findNearestCentroid(point, centroids);
