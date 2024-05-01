@@ -56,7 +56,12 @@ public class ServerMain {
             double[][] points = {
                 {1.0, 2.0},
                 {3.0, 4.0},
-                {5.0, 6.0}
+                {5.0, 6.0},
+                {2.0, 2.0},
+                {3.0, 4.0},
+                {5.0, 6.0},
+                {7.0, 8.0},
+                {1.0, 1.0},
             };
             
             // Generate some random centroids
@@ -65,6 +70,7 @@ public class ServerMain {
                 {4.0, 4.0}
             };
 
+            
             // Get the number of clients
             int numClients = 3; // Change this according to the number of clients
 
@@ -75,50 +81,66 @@ public class ServerMain {
             totalResults = new double[points.length][2];
 
 
-            // Send each chunk to a client
-            for (int i = 0; i < numClients; i++) {
-                // Lookup the client
-                ClientInter client = (ClientInter) registry.lookup("client" + (i + 1));
+            int maxIterations = 10; // Change this as needed
+            int iterations = 0;
 
-                // Calculate start and end index of the chunk
-                int startIndex = i * chunkSize;
-                int endIndex = Math.min(startIndex + chunkSize, points.length);
+            boolean centroidsChanged = true;
+            while (centroidsChanged && iterations < maxIterations) {
+                centroidsChanged = false;
 
-                // Extract the chunk of points
-                double[][] chunk = new double[endIndex - startIndex][];
-                System.arraycopy(points, startIndex, chunk, 0, endIndex - startIndex);
+                // Send each chunk to a client
+                for (int i = 0; i < numClients; i++) {
+                    // Lookup the client
+                    ClientInter client = (ClientInter) registry.lookup("client" + (i + 1));
 
-                // Process the chunk and store the results
-                double[][] chunkResults = client.processChunk(chunk, centroids);
-                System.arraycopy(chunkResults, 0, totalResults, startIndex, chunkResults.length);
-            }
+                    // Calculate start and end index of the chunk
+                    int startIndex = i * chunkSize;
+                    int endIndex = Math.min(startIndex + chunkSize, points.length);
 
-            // Print the total results
-            System.out.println("************** Total Results: ****************");
-            for (int i = 0; i < totalResults.length; i++) {
-                System.out.println("Point " + (i + 1) + " is closest to centroid (" + totalResults[i][0] + ", " + totalResults[i][1] + ")");
-            }
+                    // Extract the chunk of points
+                    double[][] chunk = new double[endIndex - startIndex][];
+                    System.arraycopy(points, startIndex, chunk, 0, endIndex - startIndex);
 
-            // Update centroids based on the totalResults
-            for (int i = 0; i < centroids.length; i++) {
-                double sumX = 0;
-                double sumY = 0;
-                int count = 0;
-                for (int j = 0; j < totalResults.length; j++) {
-                    if (totalResults[j][0] == centroids[i][0] && totalResults[j][1] == centroids[i][1]) {
-                        sumX += points[j][0];
-                        sumY += points[j][1];
-                        count++;
+                    // Process the chunk and store the results
+                    double[][] chunkResults = client.processChunk(chunk, centroids);
+                    System.arraycopy(chunkResults, 0, totalResults, startIndex, chunkResults.length);
+                }
+
+                // Update centroids based on the totalResults
+                for (int i = 0; i < centroids.length; i++) {
+                    double sumX = 0;
+                    double sumY = 0;
+                    int count = 0;
+                    for (int j = 0; j < totalResults.length; j++) {
+                        if (totalResults[j][0] == centroids[i][0] && totalResults[j][1] == centroids[i][1]) {
+                            sumX += points[j][0];
+                            sumY += points[j][1];
+                            count++;
+                        }
+                    }
+                    double newX = count > 0 ? sumX / count : centroids[i][0];
+                    double newY = count > 0 ? sumY / count : centroids[i][1];
+                    if (newX != centroids[i][0] || newY != centroids[i][1]) {
+                        centroidsChanged = true;
+                        centroids[i][0] = newX;
+                        centroids[i][1] = newY;
                     }
                 }
-                centroids[i][0] = count > 0 ? sumX / count : centroids[i][0];
-                centroids[i][1] = count > 0 ? sumY / count : centroids[i][1];
+
+                // Print the updated centroids
+                System.out.println("************** Updated Centroids after Iteration " + (iterations + 1) + ": ****************");
+                for (int i = 0; i < centroids.length; i++) {
+                    System.out.println("Centroid " + (i + 1) + ": (" + centroids[i][0] + ", " + centroids[i][1] + ")");
+                }
+
+                iterations++;
             }
 
-            // Print the updated centroids
-            System.out.println("************** Updated Centroids: ****************");
-            for (int i = 0; i < centroids.length; i++) {
-                System.out.println("Centroid " + (i + 1) + ": (" + centroids[i][0] + ", " + centroids[i][1] + ")");
+            // Print if the centroids converge or reached max iterations
+            if (!centroidsChanged) {
+                System.out.println("Centroids converged after " + iterations + " iterations.");
+            } else {
+                System.out.println("Max iterations reached (" + maxIterations + ").");
             }
 
 
