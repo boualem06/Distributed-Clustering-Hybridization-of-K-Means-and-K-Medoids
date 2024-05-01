@@ -74,6 +74,7 @@ public class ServerMain {
             // Create an array to hold the results from each client
             totalResults = new double[points.length][2];
 
+
             // Send each chunk to a client
             for (int i = 0; i < numClients; i++) {
                 // Lookup the client
@@ -98,6 +99,28 @@ public class ServerMain {
                 System.out.println("Point " + (i + 1) + " is closest to centroid (" + totalResults[i][0] + ", " + totalResults[i][1] + ")");
             }
 
+            // Update centroids based on the totalResults
+            for (int i = 0; i < centroids.length; i++) {
+                double sumX = 0;
+                double sumY = 0;
+                int count = 0;
+                for (int j = 0; j < totalResults.length; j++) {
+                    if (totalResults[j][0] == centroids[i][0] && totalResults[j][1] == centroids[i][1]) {
+                        sumX += points[j][0];
+                        sumY += points[j][1];
+                        count++;
+                    }
+                }
+                centroids[i][0] = count > 0 ? sumX / count : centroids[i][0];
+                centroids[i][1] = count > 0 ? sumY / count : centroids[i][1];
+            }
+
+            // Print the updated centroids
+            System.out.println("************** Updated Centroids: ****************");
+            for (int i = 0; i < centroids.length; i++) {
+                System.out.println("Centroid " + (i + 1) + ": (" + centroids[i][0] + ", " + centroids[i][1] + ")");
+            }
+
 
 
         } catch (RemoteException e) {
@@ -108,8 +131,6 @@ public class ServerMain {
             e.printStackTrace();
         }
     }
-
-
 
 }
 
