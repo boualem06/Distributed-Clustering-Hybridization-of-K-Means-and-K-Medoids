@@ -97,8 +97,8 @@ public class ClientImpl implements  ClientInter{
             cost=0 ;
             for (int j=0;j<points.length;j++){
                 if (clusters[k*chunkSize+i] == clusters[j]) { 
-                    System.out.println(clusters[i] == clusters[j]);
-                    System.out.println("the point1 is "+chunk[i][0]+" "+chunk[i][1]+" the point 2 is "+points[j][0]+" "+points[j][1]+" the manhatan distane is "+calculateManhattanDistance(chunk[i], points[j]));
+                    // System.out.println(clusters[i] == clusters[j]);
+                    // System.out.println("the point1 is "+chunk[i][0]+" "+chunk[i][1]+" the point 2 is "+points[j][0]+" "+points[j][1]+" the manhatan distane is "+calculateManhattanDistance(chunk[i], points[j]));
                      cost += calculateManhattanDistance(chunk[i], points[j]);
                 }
             }
