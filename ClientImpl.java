@@ -90,16 +90,19 @@ public class ClientImpl implements  ClientInter{
     }
 
     @Override
-    public double[][] calculateCost(double[][] chunk, double[][] points, int[] clusters ){
+    public double[][] calculateCost(double[][] chunk, double[][] points, int[] clusters,int chunkSize,int k ){
         List<double[]> costs = new ArrayList<>();
         double cost;
         for (int i = 0; i < chunk.length; i++) {
             cost=0 ;
             for (int j=0;j<points.length;j++){
-                if (clusters[i] == clusters[j]) { 
+                if (clusters[k*chunkSize+i] == clusters[j]) { 
+                    System.out.println(clusters[i] == clusters[j]);
+                    System.out.println("the point1 is "+chunk[i][0]+" "+chunk[i][1]+" the point 2 is "+points[j][0]+" "+points[j][1]+" the manhatan distane is "+calculateManhattanDistance(chunk[i], points[j]));
                      cost += calculateManhattanDistance(chunk[i], points[j]);
                 }
             }
+            // System.out.println("the value cost of the point "+i+" is : "+cost);
             costs.add(new double[] { i, cost });
            
         }

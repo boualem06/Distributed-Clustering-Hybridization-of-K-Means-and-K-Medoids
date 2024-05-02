@@ -19,7 +19,7 @@ public interface ClientInter  extends Remote{
 
     //  double[][] calculateCost(double[][] points, int[] clusters) throws RemoteException;
 
-    double[][] calculateCost(double[][] chunk, double[][] points, int[] clusters) throws RemoteException;
+    double[][] calculateCost(double[][] chunk, double[][] points, int[] clusters ,int chunkSize,int k) throws RemoteException;
      
     
     }

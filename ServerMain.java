@@ -228,13 +228,13 @@ public class ServerMain {
             double[][] points = {
                 {2.0, 6.0},
                 {3.0, 4.0},
-                {3.0, 8.0},
-                {4.0, 7.0},
-                {6.0, 2.0},
-                {6.0, 4.0},
-                {7.0, 3.0},
                 {7.0, 4.0},
-                {8.0, 5.0}
+                // {4.0, 7.0},
+                // {6.0, 2.0},
+                // {6.0, 4.0},
+                // {7.0, 3.0},
+                // {7.0, 4.0},
+                // {8.0, 5.0}
             };
 
             // Generate some random medoids
@@ -290,6 +290,9 @@ public class ServerMain {
             System.out.println("***************************results from clusters assignement********************");
             // Assign clusters to points
              int[] clusters = assignClusters(clientResults,points.length);
+             for (int z=0;z<clusters.length;z++){
+                System.out.println("la point "+z+" appartiet au cluster "+clusters[z]);
+             }
 
              double[][][] clientResultsCost = new double[numClients][][];
 
@@ -299,9 +302,9 @@ public class ServerMain {
                 int startIndex = i * chunkSize;
                 int endIndex = Math.min(startIndex + chunkSize, points.length);
                 double[][] chunk = Arrays.copyOfRange(points, startIndex, endIndex);
-                clientResultsCost[i] = client.calculateCost(chunk, points,clusters); // Initialize clusters as empty
+                clientResultsCost[i] = client.calculateCost(chunk, points,clusters,chunkSize,i); // Initialize clusters as empty
             }
-            System.out.println("the first length "+clientResultsCost[0][0].length);
+            // System.out.println("the first length "+clientResultsCost[0][0].length);
 
             System.out.println("************** Results from Clients on the costs operation : ****************");
             for (int i = 0; i < numClients; i++) {
