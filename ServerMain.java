@@ -40,110 +40,303 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.Arrays;
 
 public class ServerMain {
+
+    public static int[] findNearestPointToCentroid(double[][] points, double[][] centroids) {
+        int[] nearestIndices = new int[centroids.length];
+        
+        for (int i = 0; i < centroids.length; i++) {
+            double minDistance = Double.MAX_VALUE;
+            int nearestIndex = -1;
+            
+            for (int j = 0; j < points.length; j++) {
+                double distance = calculateDistance(points[j], centroids[i]);
+                if (distance < minDistance) {
+                    minDistance = distance;
+                    nearestIndex = j;
+                }
+            }
+            
+            nearestIndices[i] = nearestIndex;
+        }
+        
+        return nearestIndices;
+    }
+
+
+    public static double calculateDistance(double[] point1, double[] point2) {
+        double sum = 0.0;
+        for (int i = 0; i < point1.length; i++) {
+            sum += Math.pow(point1[i] - point2[i], 2);
+        }
+        return Math.sqrt(sum);
+    }
+
+    //******************************************methodes for the kmedoides */
+    // Method to assign each point to a cluster based on the distances
+    public static int[] assignClusters(double[][][] clientResults, int numDataPoints) {
+        int[] clusters = new int[numDataPoints]; // Store the cluster index for each data point
+        System.out.println(clientResults[1].length);
+        int numpoint=0 ;
+        for (int i = 0; i < clientResults.length; i++) {
+            
+
+            // Find the cluster with the minimum distance for each point
+            for (int j = 0; j < clientResults[i].length; j++) {
+                double minDistance = Double.MAX_VALUE;
+                int clusterIndex = -1; // Initialize cluster index
+                for (int k=0;k<clientResults[0][0].length;k++){
+                    double distance=clientResults[i][j][k];
+                    if (distance < minDistance) {
+                        minDistance = distance;
+                        clusterIndex = k; // Update cluster index
+                    }
+                }
+                clusters[numpoint] = clusterIndex;
+                numpoint++ ;
+                // double distance = clientResults[i][j][0]; // Assuming the first column stores distances
+            }
+            
+        }
+        return clusters;
+    }
+
+
     public static void main(String args[]) {
         
         try {
             
              // Get the RMI registry
-            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
+            // Registry registry = LocateRegistry.getRegistry("localhost", 1099);
 
-            // Create an array to hold the results from each client
-            double[][] totalResults = null;
+            // // Create an array to hold the results from each client
+            // double[][] totalResults = null;
+
+            // // Divide the points into chunks
+            // double[][] points = {
+            //     {1, 2},
+            //     {3, 4},
+            //     {5, 6},
+            //     {2, 2},
+            //     {3, 4},
+            //     {5, 6},
+            //     {7, 8},
+            //     {1, 1},
+            // };
+            
+            // // Generate some random centroids
+            // double[][] centroids = {
+            //     {2, 2},
+            //     {4, 4}
+            // };
+
+            
+            // // Get the number of clients
+            // int numClients = 3; // Change this according to the number of clients
+
+            // // Calculate chunk size
+            // int chunkSize = points.length / numClients;
+
+            // // Create an array to hold the results from each client
+            // totalResults = new double[points.length][2];
+
+
+            // int maxIterations = 10; // Change this as needed
+            // int iterations = 0;
+
+            // boolean centroidsChanged = true;
+            // while (centroidsChanged && iterations < maxIterations) {
+            //     centroidsChanged = false;
+
+            //     // Send each chunk to a client
+            //     for (int i = 0; i < numClients; i++) {
+            //         // Lookup the client
+            //         ClientInter client = (ClientInter) registry.lookup("client" + (i + 1));
+
+            //         // Calculate start and end index of the chunk
+            //         int startIndex = i * chunkSize;
+            //         int endIndex = Math.min(startIndex + chunkSize, points.length);
+
+            //         // Extract the chunk of points
+            //         double[][] chunk = new double[endIndex - startIndex][];
+            //         System.arraycopy(points, startIndex, chunk, 0, endIndex - startIndex);
+
+            //         // Process the chunk and store the results
+            //         double[][] chunkResults = client.processChunk(chunk, centroids);
+            //         System.arraycopy(chunkResults, 0, totalResults, startIndex, chunkResults.length);
+            //     }
+
+            //     // Update centroids based on the totalResults
+            //     for (int i = 0; i < centroids.length; i++) {
+            //         double sumX = 0;
+            //         double sumY = 0;
+            //         int count = 0;
+            //         for (int j = 0; j < totalResults.length; j++) {
+            //             if (totalResults[j][0] == centroids[i][0] && totalResults[j][1] == centroids[i][1]) {
+            //                 sumX += points[j][0];
+            //                 sumY += points[j][1];
+            //                 count++;
+            //             }
+            //         }
+            //         double newX = count > 0 ? sumX / count : centroids[i][0];
+            //         double newY = count > 0 ? sumY / count : centroids[i][1];
+            //         if (newX != centroids[i][0] || newY != centroids[i][1]) {
+            //             centroidsChanged = true;
+            //             centroids[i][0] = newX;
+            //             centroids[i][1] = newY;
+            //         }
+            //     }
+
+            //     // Print the updated centroids
+            //     System.out.println("************** Updated Centroids after Iteration " + (iterations + 1) + ": ****************");
+            //     for (int i = 0; i < centroids.length; i++) {
+            //         System.out.println("Centroid " + (i + 1) + ": (" + centroids[i][0] + ", " + centroids[i][1] + ")");
+            //     }
+
+            //     iterations++;
+            // }
+
+            // // Print if the centroids converge or reached max iterations
+            // if (!centroidsChanged) {
+            //     System.out.println("Centroids converged after " + iterations + " iterations.");
+            // } else {
+            //     System.out.println("Max iterations reached (" + maxIterations + ").");
+            // }
+
+
+            // // After the k-means algorithm, find the nearest point to each centroid
+            // int[] finalNearestIndices = findNearestPointToCentroid(points, centroids);
+            
+            // // Print the nearest points to centroids
+            // System.out.println("************** Nearest Points to Centroids: ****************");
+            // for (int i = 0; i < centroids.length; i++) {
+            //     int nearestIndex = finalNearestIndices[i];
+            //     System.out.println("Centroid " + (i + 1) + " is closest to point (" + points[nearestIndex][0] + ", " + points[nearestIndex][1] + ")");
+            // }
+
+            //*****************************************************the begining of the kmedoides algorithme **************
+            // Get the RMI registry
+            
+
+
+
+            Registry registry = LocateRegistry.getRegistry("localhost", 1099);
 
             // Divide the points into chunks
             double[][] points = {
-                {1.0, 2.0},
+                {2.0, 6.0},
                 {3.0, 4.0},
-                {5.0, 6.0},
-                {2.0, 2.0},
-                {3.0, 4.0},
-                {5.0, 6.0},
-                {7.0, 8.0},
-                {1.0, 1.0},
-            };
-            
-            // Generate some random centroids
-            double[][] centroids = {
-                {2.0, 2.0},
-                {4.0, 4.0}
+                {3.0, 8.0},
+                {4.0, 7.0},
+                {6.0, 2.0},
+                {6.0, 4.0},
+                {7.0, 3.0},
+                {7.0, 4.0},
+                {8.0, 5.0}
             };
 
-            
+            // Generate some random medoids
+            double[][] medoids = {
+                {3.0, 4.0},
+                {7.0, 4.0}
+            };
+
             // Get the number of clients
-            int numClients = 3; // Change this according to the number of clients
+            int numClients = 3;
 
             // Calculate chunk size
             int chunkSize = points.length / numClients;
 
             // Create an array to hold the results from each client
-            totalResults = new double[points.length][2];
+            double[][][] clientResults = new double[numClients][][];
 
+            // Send each chunk to a client
+            for (int i = 0; i < numClients; i++) {
+                // Lookup the client
+                ClientInter client = (ClientInter) registry.lookup("client" + (i + 1));
 
-            int maxIterations = 10; // Change this as needed
-            int iterations = 0;
+                // Calculate start and end index of the chunk
+                int startIndex = i * chunkSize;
+                int endIndex = Math.min(startIndex + chunkSize, points.length);
 
-            boolean centroidsChanged = true;
-            while (centroidsChanged && iterations < maxIterations) {
-                centroidsChanged = false;
+                // Extract the chunk of points
+                double[][] chunk = Arrays.copyOfRange(points, startIndex, endIndex);
 
-                // Send each chunk to a client
-                for (int i = 0; i < numClients; i++) {
-                    // Lookup the client
-                    ClientInter client = (ClientInter) registry.lookup("client" + (i + 1));
+                // Calculate Manhattan distances for the chunk
+                double[][] distances = client.calculateManhattanDistance(chunk, medoids);
 
-                    // Calculate start and end index of the chunk
-                    int startIndex = i * chunkSize;
-                    int endIndex = Math.min(startIndex + chunkSize, points.length);
-
-                    // Extract the chunk of points
-                    double[][] chunk = new double[endIndex - startIndex][];
-                    System.arraycopy(points, startIndex, chunk, 0, endIndex - startIndex);
-
-                    // Process the chunk and store the results
-                    double[][] chunkResults = client.processChunk(chunk, centroids);
-                    System.arraycopy(chunkResults, 0, totalResults, startIndex, chunkResults.length);
-                }
-
-                // Update centroids based on the totalResults
-                for (int i = 0; i < centroids.length; i++) {
-                    double sumX = 0;
-                    double sumY = 0;
-                    int count = 0;
-                    for (int j = 0; j < totalResults.length; j++) {
-                        if (totalResults[j][0] == centroids[i][0] && totalResults[j][1] == centroids[i][1]) {
-                            sumX += points[j][0];
-                            sumY += points[j][1];
-                            count++;
-                        }
-                    }
-                    double newX = count > 0 ? sumX / count : centroids[i][0];
-                    double newY = count > 0 ? sumY / count : centroids[i][1];
-                    if (newX != centroids[i][0] || newY != centroids[i][1]) {
-                        centroidsChanged = true;
-                        centroids[i][0] = newX;
-                        centroids[i][1] = newY;
-                    }
-                }
-
-                // Print the updated centroids
-                System.out.println("************** Updated Centroids after Iteration " + (iterations + 1) + ": ****************");
-                for (int i = 0; i < centroids.length; i++) {
-                    System.out.println("Centroid " + (i + 1) + ": (" + centroids[i][0] + ", " + centroids[i][1] + ")");
-                }
-
-                iterations++;
-            }
-
-            // Print if the centroids converge or reached max iterations
-            if (!centroidsChanged) {
-                System.out.println("Centroids converged after " + iterations + " iterations.");
-            } else {
-                System.out.println("Max iterations reached (" + maxIterations + ").");
+                // Store the results
+                clientResults[i] = distances;
             }
 
 
+            // // Print the results
+            System.out.println("************** Results from Clients: ****************");
+            for (int i = 0; i < numClients; i++) {
+                System.out.println("Results from Client " + (i + 1) + ":");
+                for (int j = 0; j < clientResults[i].length; j++) {
+                    System.out.print("Point " + (j + 1) + ": ");
+                    for (int k = 0; k < clientResults[i][j].length; k++) {
+                        System.out.print(clientResults[i][j][k] + " ");
+                    }
+                    System.out.println();
+                }
+                System.out.println();
+            }
+
+            //***************************results from clusters assignement  */
+            System.out.println("***************************results from clusters assignement********************");
+            // Assign clusters to points
+             int[] clusters = assignClusters(clientResults,points.length);
+
+             double[][][] clientResultsCost = new double[numClients][][];
+
+            // Send each chunk to a client
+            for (int i = 0; i < numClients; i++) {
+                ClientInter client = (ClientInter) registry.lookup("client" + (i + 1));
+                int startIndex = i * chunkSize;
+                int endIndex = Math.min(startIndex + chunkSize, points.length);
+                double[][] chunk = Arrays.copyOfRange(points, startIndex, endIndex);
+                clientResultsCost[i] = client.calculateCost(chunk, points,clusters); // Initialize clusters as empty
+            }
+            System.out.println("the first length "+clientResultsCost[0][0].length);
+
+            System.out.println("************** Results from Clients on the costs operation : ****************");
+            for (int i = 0; i < numClients; i++) {
+                System.out.println("Results from Client " + (i + 1) + ":");
+                for (int j = 0; j < clientResultsCost[i].length; j++) {
+                    System.out.print("Point " + (j + 1) + ": ");
+                    for (int k = 0; k < clientResultsCost[i][j].length; k++) {
+                        System.out.print(clientResultsCost[i][j][k] + " ");
+                    }
+                    System.out.println();
+                }
+                System.out.println();
+            }
+
+            // // Accumulate the costs for each cluster
+            // double[] totalCosts = new double[medoids.length];
+            // for (double[][] result : clientResultsCost) {
+            //     for (double[] cost : result) {
+            //         totalCosts[(int) cost[0]] += cost[1];
+            //     }
+            // }
+
+            // Print the total costs
+            // System.out.println("************** Total Costs: ****************");
+            // for (int i = 0; i < totalCosts.length; i++) {
+            //     System.out.println("Cluster " + i + ": " + totalCosts[i]);
+            // }
+            // // Print the cluster assignments
+            // // System.out.println("************** Cluster Assignments: ****************");
+            // for (int i = 0; i < points.length; i++) {
+            //     System.out.println("Point " + (i + 1) + " is assigned to Cluster " + (clusters[i] + 1));
+            // }
+            // // System.out.println("le nombre de points est "+points.length);
+
+           
 
         } catch (RemoteException e) {
             System.out.println("RemoteException at server");

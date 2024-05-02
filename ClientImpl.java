@@ -21,7 +21,7 @@ public class ClientImpl implements  ClientInter{
     public double[][] processChunk(double[][] points, double[][] centroids) throws RemoteException {
         // // Process each point in the chunk
        
-        // System.out.println(points[0][0]);
+        System.out.println(points[0][0]);
 
         List<double[]> results = new ArrayList<>();
         for (double[] point : points) {
@@ -63,6 +63,56 @@ public class ClientImpl implements  ClientInter{
         return Math.sqrt(sum);
     }
 
+
+    // ************************************************** the code used for kmedoides ***************************
+    // Method to calculate Manhattan distance between a chunk of points and medoids
+    @Override
+    public double[][] calculateManhattanDistance(double[][] points, double[][] medoids)  {
+        double[][] distances = new double[points.length][medoids.length];
+
+        for (int i = 0; i < points.length; i++) {
+            for (int j = 0; j < medoids.length; j++) {
+                distances[i][j] = calculateManhattanDistance(points[i], medoids[j]);
+            }
+        }
+
+        return distances;
+    }
+
+    // Method to calculate Manhattan distance between two points
+    @Override
+    public double calculateManhattanDistance(double[] point1, double[] point2) {
+        double distance = 0;
+        for (int i = 0; i < point1.length; i++) {
+            distance += Math.abs(point1[i] - point2[i]);
+        }
+        return distance;
+    }
+
+    @Override
+    public double[][] calculateCost(double[][] chunk, double[][] points, int[] clusters ){
+        List<double[]> costs = new ArrayList<>();
+        double cost;
+        for (int i = 0; i < chunk.length; i++) {
+            cost=0 ;
+            for (int j=0;j<points.length;j++){
+                if (clusters[i] == clusters[j]) { 
+                     cost += calculateManhattanDistance(chunk[i], points[j]);
+                }
+            }
+            costs.add(new double[] { i, cost });
+           
+        }
+        return costs.toArray(new double[0][]);
+    }
+    // @Override
+    // public double calculateDistance(double[] p1, double[] p2) {
+    //     double distance = 0;
+    //     for (int i = 0; i < p1.length; i++) {
+    //         distance += Math.abs(p1[i] - p2[i]);
+    //     }
+    //     return distance;
+    // }
 
     public String getName() {
         return name;

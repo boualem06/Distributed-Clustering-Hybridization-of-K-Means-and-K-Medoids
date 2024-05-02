@@ -13,8 +13,16 @@ public interface ClientInter  extends Remote{
     // Method to process a chunk of points and find the nearest centroids for each point
     double[][] processChunk(double[][] points, double[][] centroids) throws RemoteException;
 
+    double calculateManhattanDistance(double[] point1, double[] point2) throws RemoteException;
     // int[] getChunk()
-}
+     double[][] calculateManhattanDistance(double[][] points, double[][] medoids) throws RemoteException ;
+
+    //  double[][] calculateCost(double[][] points, int[] clusters) throws RemoteException;
+
+    double[][] calculateCost(double[][] chunk, double[][] points, int[] clusters) throws RemoteException;
+     
+    
+    }
  
 
 // import java.rmi.Remote;
