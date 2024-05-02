@@ -216,7 +216,7 @@ public class ServerMain {
             //     System.out.println("Centroid " + (i + 1) + " is closest to point (" + points[nearestIndex][0] + ", " + points[nearestIndex][1] + ")");
             // }
 
-            //*****************************************************the begining of the kmedoides algorithme **************
+            //*****************************************************the begining of the kmedoides algorithme **************************
             // Get the RMI registry
             
 
@@ -228,9 +228,10 @@ public class ServerMain {
             double[][] points = {
                 {2.0, 6.0},
                 {3.0, 4.0},
+                {1.0, 1.0},
                 {7.0, 4.0},
-                // {4.0, 7.0},
-                // {6.0, 2.0},
+                {8.0, 5.0},
+                {9.0, 5.0},
                 // {6.0, 4.0},
                 // {7.0, 3.0},
                 // {7.0, 4.0},
@@ -286,7 +287,7 @@ public class ServerMain {
                 System.out.println();
             }
 
-            //***************************results from clusters assignement  */
+            //***************************results from clusters assignement *************************************** */
             System.out.println("***************************results from clusters assignement********************");
             // Assign clusters to points
              int[] clusters = assignClusters(clientResults,points.length);
@@ -296,13 +297,13 @@ public class ServerMain {
 
              double[][][] clientResultsCost = new double[numClients][][];
 
-            // Send each chunk to a client
+            // ********************************Send each chunk to a client to calculate the cost ***************************
             for (int i = 0; i < numClients; i++) {
                 ClientInter client = (ClientInter) registry.lookup("client" + (i + 1));
                 int startIndex = i * chunkSize;
                 int endIndex = Math.min(startIndex + chunkSize, points.length);
                 double[][] chunk = Arrays.copyOfRange(points, startIndex, endIndex);
-                clientResultsCost[i] = client.calculateCost(chunk, points,clusters,chunkSize,i); // Initialize clusters as empty
+                clientResultsCost[i] = client.calculateCost(chunk, points,clusters,chunkSize,i); // it allows to calculate the cost from each point to the points in the same cluster 
             }
             // System.out.println("the first length "+clientResultsCost[0][0].length);
 
@@ -317,6 +318,44 @@ public class ServerMain {
                     System.out.println();
                 }
                 System.out.println();
+            }
+
+            //**********************************find the points with smallest cost in each cluster ****************************************
+            // Initialize an array to store the index of the point with the smallest cost for each cluster
+            int[] minCostPointIndex = new int[medoids.length];
+
+            // Initialize an array to store the minimum cost for each cluster
+            double[] minCostPerCluster = new double[medoids.length];
+
+            // Initialize the arrays
+            Arrays.fill(minCostPointIndex, -1); // -1 indicates no point found yet
+            Arrays.fill(minCostPerCluster, Double.MAX_VALUE); // Initialize to a very large value
+
+            // Iterate over clientResultsCost to find the point with the smallest cost for each cluster
+            for (int i = 0; i < clientResultsCost.length; i++) {
+                for (int j = 0; j < clientResultsCost[i].length; j++) {
+                    double[] result = clientResultsCost[i][j];
+                    int pointIndex = (int) (result[0])+chunkSize*i; // Get the index of the point
+                    double cost = result[1]; // Get the cost
+
+                    // Check if the cost is smaller than the minimum cost for the cluster
+                    if (cost < minCostPerCluster[clusters[pointIndex]]) {
+                        minCostPerCluster[clusters[pointIndex]] = cost; // Update the minimum cost
+                        minCostPointIndex[clusters[pointIndex]] = pointIndex; // Update the point index
+                    }
+                }
+            } 
+
+            // Print the values of minCostPointIndex
+            System.out.println("************** Min Cost Point Index per Cluster: ****************");
+            for (int i = 0; i < minCostPointIndex.length; i++) {
+                System.out.println("Cluster " + (i + 1) + ": Point " + minCostPointIndex[i]);
+            }
+
+            // Print the values of minCostPerCluster
+            System.out.println("************** Min Cost per Cluster: ****************");
+            for (int i = 0; i < minCostPerCluster.length; i++) {
+                System.out.println("Cluster " + (i + 1) + ": " + minCostPerCluster[i]);
             }
 
             // // Accumulate the costs for each cluster
