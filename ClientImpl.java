@@ -21,13 +21,16 @@ public class ClientImpl implements  ClientInter{
     public double[][] processChunk(double[][] points, double[][] centroids) throws RemoteException {
         // // Process each point in the chunk
        
-        System.out.println(points[0][0]);
+        
 
         List<double[]> results = new ArrayList<>();
         for (double[] point : points) {
+            System.out.println(point[0]+"****"+point[1]);
             double[] nearestCentroid = findNearestCentroid(point, centroids);
+            System.out.println(nearestCentroid[0]+"--->"+nearestCentroid[1]);
             results.add(nearestCentroid);
         }
+        System.out.println("***********************************");
 
         // Convert results list to array
         double[][] resultsArray = new double[results.size()][];
